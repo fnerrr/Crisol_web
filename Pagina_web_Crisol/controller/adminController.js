@@ -17,76 +17,128 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
+const mostrarSlides = async (req, res) => {
+    try {
+        // Verificar si existe al menos una revista
+        const revistaDefault = await Revistas.findByPk(1);
+        
+        // Si no existe revista con ID 1, crea una por defecto
+        if (!revistaDefault) {
+            await Revistas.create({
+                id: 1,
+                titulo: 'Revista por defecto',
+                // ...otros campos necesarios con valores por defecto
+            });
+        }
+
+        // Obtener o crear los 4 slides si no existen
+        const slidesCount = await Slider.count();
+        if (slidesCount < 4) {
+            for (let i = 1; i <= 4; i++) {
+                await Slider.findOrCreate({
+                    where: { posicion: i },
+                    defaults: {
+                        imagen: `/img/slider${i}.jpg`,
+                        revista_id: 1, // ID de revista por defecto
+                        posicion: i
+                    }
+                });
+            }
+        }
+
+        const slides = await Slider.findAll({
+            where: { posicion: [1, 2, 3, 4] },
+            include: [{
+                model: Revistas,
+                as: 'revista'
+            }],
+            order: [['posicion', 'ASC']]
+        });
+
+        const revistas = await Revistas.findAll();
+
+        res.render('admin/sliders', {
+            slides,
+            revistas,
+        });
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'Error al cargar los slides');
+        res.redirect('/admin/inicio');
+    }
+};
+
+const actualizarSlide = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { revista_id } = req.body;
+        
+        const slide = await Slider.findByPk(id);
+        if (!slide) {
+            throw new Error('Slide no encontrado');
+        }
+
+        // Verificar que la revista exista
+        const revista = await Revistas.findByPk(revista_id);
+        if (!revista) {
+            throw new Error('La revista seleccionada no existe');
+        }
+
+        // Actualizar revista
+        slide.revista_id = revista_id;
+
+        // Actualizar imagen si se subió una nueva
+        if (req.file) {
+            // Verificar si es una imagen predefinida
+            if (slide.imagen.startsWith('/img/slider')) {
+                // Obtener la ruta completa del archivo existente
+                const oldImagePath = path.join(__dirname, '..', 'public', slide.imagen);
+                
+                // Eliminar la imagen anterior si existe
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+                
+                // Mover la nueva imagen al mismo nombre/ruta
+                const newImagePath = path.join(__dirname, '..', 'public', slide.imagen);
+                fs.renameSync(req.file.path, newImagePath);
+                
+                // No actualizamos slide.imagen porque mantiene el mismo valor
+            } else {
+                // Si no es imagen predefinida, usar el nombre original del archivo subido
+                slide.imagen = '/uploads/sliders/' + req.file.filename;
+            }
+        }
+
+        await slide.save();
+
+        // req.flash('success', 'Slide actualizado correctamente');
+        res.redirect('/admin/slider');
+
+    } catch (error) {
+        console.error(error);
+        // req.flash('error', error.message);
+        res.redirect('/admin/slider');
+    }
+};
+
 const mostrarFormularioCrear = async (req, res) => {
     try {
         // Obtener todas las revistas para el select
         const revistas = await Revistas.findAll({
             order: [['titulo', 'ASC']]
-        });
+        });    
         
         res.render('admin/sliders', {
             revistas,
             pagina: 'Nuevo Slide'
-        });
+        });    
     } catch (error) {
         console.log(error);
         res.redirect('/admin/sliders');
-    }
-};
-
-
-const obtenerSlides = async (req, res) => {
-    try {
-        const slides = await Slider.findAll({
-            where: { activo: true },
-            include: {
-                model: Revistas,
-                as: 'revista',
-                attributes: ['url', 'titulo'] // Traemos la URL y título de la revista
-            },
-            order: [['orden', 'ASC']]
-        });
-
-        res.json(slides);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const crearSlide = async (req, res) => {
-    try {
-        const { revista_id, orden } = req.body;
-        
-        // Verificar que se subió un archivo
-        if (!req.file) {
-            throw new Error('Debe seleccionar una imagen');
-        }
-
-        // Convertir el valor del checkbox a booleano
-        const activo = req.body.activo === 'on';
-        
-        // Construir la ruta relativa de la imagen
-        // Asumiendo que multer guarda en public/uploads/sliders
-        const imagenPath = `/uploads/sliders/${req.file.filename}`;
-        
-        const slider = await Slider.create({
-            imagen: imagenPath, // Guardamos la ruta relativa
-            revista_id,
-            orden,
-            activo
-        });
-
-        res.redirect('/admin/slider');
-    } catch (error) {
-        console.log(error);
-        res.render('admin/slider/create', { // Asegúrate de renderizar la vista correcta
-            revistas: await Revistas.findAll(),
-            errores: [{ message: error.message }],
-            datos: req.body
-        });
-    }
-};
-
+    }    
+};    
 
 const inicio = (req, res) => {
     res.render('admin/inicio', {
@@ -1010,7 +1062,7 @@ export {
     eliminarColaboracion,
     toggleFavoritoColaboracion,
     verColaboracionIndividual,
-    crearSlide,
-    obtenerSlides,
+    mostrarSlides,
+    actualizarSlide,
     mostrarFormularioCrear
 };

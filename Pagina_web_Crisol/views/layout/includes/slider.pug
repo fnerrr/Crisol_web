@@ -1,56 +1,49 @@
 .slider.relative.overflow-hidden.shadow-lg
+    //- Track del slider
     .slider-track.flex.transition-transform.duration-500
-        each image in images
-            .slider-item.flex-shrink-0.w-full
-                img(src=image, alt="Slider Image" class="w-full h-auto object-cover rounded-lg shadow-md")
-    .slider-controls.absolute.inset-0.flex.items-center.justify-between.px-4.pointer-events-none
-        button.prev.bg-white.p-2.rounded-full.shadow-lg.pointer-events-auto(class="hover:bg-gray-200") &larr;
-        button.next.bg-white.p-2.rounded-full.shadow-lg.pointer-events-auto(class="hover:bg-gray-200") &rarr;
+        each slide in slides
+            .slider-item.flex-shrink-0.w-full(class="relative")
+                a(href=`/revista/${slide.revista.id}` class="block")
+                    img(
+                        src=slide.imagen, 
+                        alt=`Slide ${slide.posicion} - ${slide.revista.titulo}`
+                        class="w-full h-auto object-cover rounded-lg shadow-md md:h-[400px]"
+                        onerror="this.src='/images/slide-default.jpg'"
+                    )
+                    //- Overlay solo para desktop
+                    .absolute.bottom-0.left-0.right-0.bg-gradient-to-t.from-black.to-transparent.p-4.text-white(class="hidden md:block")
+                        h3.text-xl.font-bold= slide.revista.titulo
+                        p.text-sm= slide.revista.descripcion || 'Ver revista'
+
+    //- Controles del slider
+    .slider-controls.absolute.inset-0.flex.items-center.justify-between.px-1.pointer-events-none
+        button.prev.bg-white.p-2.rounded-full.shadow-lg.pointer-events-auto(class="opacity-70 hover:opacity-100 focus:opacity-100 active:opacity-100 transition-opacity") &larr;
+        button.next.bg-white.p-2.rounded-full.shadow-lg.pointer-events-auto(class="opacity-70 hover:opacity-100 focus:opacity-100 active:opacity-100 transition-opacity") &rarr;
 
 style.
-    /* Estilos base del slider */
+    /* Estilos para móvil (por defecto) */
     .slider {
         width: 100%;
         margin: 0 auto;
     }
-
     .slider-track {
         width: 100%;
     }
-
     .slider-item {
         width: 100%;
         flex: 0 0 auto;
     }
 
-    /* Ajustes para pantallas más grandes */
-    @media (min-width: 640px) {
-        .slider {
-            max-width: 640px; /* Ajusta según necesites */
-        }
-    }
-
+    /* Estilos para desktop (md en adelante) */
     @media (min-width: 768px) {
-        .slider {
-            max-width: 768px;
+        .slider-item img {
+            height: 480px;
         }
     }
 
-    @media (min-width: 1024px) {
-        .slider {
-            max-width: 1024px;
-        }
-    }
-
-    /* Opcional: efecto de gradiente para pantallas grandes */
-    @media (min-width: 640px) {
-        .slider::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 150px;
-            pointer-events: none;
+    /* Ajustes para pantallas pequeñas */
+    @media (max-width: 767px) {
+        .slider-item img {
+            height: auto;
         }
     }

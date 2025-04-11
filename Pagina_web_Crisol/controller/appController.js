@@ -5,47 +5,46 @@ import Contacto from '../models/contacto.js'
 import Colaboracion from '../models/colaboraCrisol.js'
 import Configuracion from '../models/configuracion.js'
 import Revistas from '../models/revistas.js'
+import Slider from '../models/slider.js'
 
 
 
 const inicio = async (req, res) => {
-    const images = [
-        '/img/carruesl1.jpg',
-        '/img/carruesl2.jpg',
-        // '/img/carruesl2.jpg',
-        // '/img/carruesl2.jpg',
-        // '/img/carruesl2.jpg',
-        // '/img/carruesl3.jpg',
-        // '/img/carruesl3.jpg',
-
-        // Agrega más imágenes según sea necesario
-    ]
-    
     try {
-        const formatFileSize = (bytes) => {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        };
-        // Obtener todas las revistas de la base de datos
+        // Obtener slides con sus revistas asociadas
+        const slides = await Slider.findAll({
+            where: { posicion: [1, 2, 3, 4] },
+            include: [{
+                model: Revistas,
+                as: 'revista',
+                required: true
+            }],
+            order: [['posicion', 'ASC']]
+        });
+
+        // Resto de tu lógica original...
+        const images = []; // Esto ya no sería necesario
         const revistas = await Revistas.findAll({
-            order: [['createdAt', 'DESC']], // Ordenar por fecha de creación descendente
+            order: [['createdAt', 'DESC']],
             limit: 4,
         });
 
-        // Renderizar la vista inicio.pug y pasarle las revistas
         res.render('inicio', {
             pagina: 'Inicio',
-            formatFileSize: formatFileSize,
             barra: true,
-            images,
-            revistas: revistas
+            slides, // Pasamos los slides dinámicos
+            revistas: revistas,
+            formatFileSize: (bytes) => {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
         });
     } catch (error) {
-        console.error('Error al obtener las revistas:', error);
-        res.status(500).send('Error al cargar las revistas');
+        console.error('Error al cargar la página de inicio:', error);
+        res.status(500).send('Error al cargar la página de inicio');
     }
 };
 

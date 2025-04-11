@@ -25,17 +25,17 @@ import {
     verColaboracionIndividual,
     toggleFavoritoColaboracion,
     eliminarColaboracion,
-    crearSlide,
-    mostrarFormularioCrear
+    actualizarSlide,
+    mostrarSlides
 } from '../controller/adminController.js';
 import upload from '../config/multerConfig.js';
 import { uploadFiles } from '../config/multerRevistas.js';
 
 const router = express.Router();
 
-router.get('/slider',protegerRuta, mostrarFormularioCrear);
-router.post('/slider', protegerRuta,upload.single('imagen'), crearSlide);
-
+router.get('/slider',protegerRuta, mostrarSlides);
+// En tu archivo de rutas (routes.js)
+router.post('/slider/:id', protegerRuta, upload.single('imagen'), actualizarSlide);
 
 
 

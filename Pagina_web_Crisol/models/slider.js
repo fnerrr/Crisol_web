@@ -6,31 +6,28 @@ const Slider = db.define('sliders', {
     imagen: {
         type: DataTypes.STRING(255),
         allowNull: false,
+        defaultValue: '/images/slide-default.jpg', // Imagen por defecto
         comment: 'Ruta relativa de la imagen del slide'
     },
     revista_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'revistas', // Relación con el modelo Revistas
+            model: 'revistas',
             key: 'id'
         }
     },
-    orden: {
+    posicion: { // Nueva columna para identificar posición fija (1-4)
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-        comment: 'Orden de visualización en el slider'
-    },
-    activo: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-        comment: 'Indica si el slide está activo'
+        unique: true,
+        validate: {
+            min: 1,
+            max: 4
+        }
     }
 });
 
-// Establecer la relación
 Slider.belongsTo(Revistas, {
     foreignKey: 'revista_id',
     as: 'revista'

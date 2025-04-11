@@ -1,101 +1,202 @@
 extends ./layout/inicio_html
 
 block contenido
-    div(class="w-full flex justify-center bg-stone-50 rounded-t-xl min-h-screen")
-        div(class="m-2 sm:m-6 max-w-lg sm:max-w-6xl w-full")
-            div(class="flex flex-col items-center mb-6 sm:mb-8")
-                div(class="flex items-center gap-3")
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-700" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                    </svg>
-                    h1(class="text-3xl sm:text-4xl font-bold text-center text-gray-800") Ediciones Crisol
+    div(class="w-full bg-stone-50 min-h-screen")
+        // Sección Línea Editorial
+        section(id="ediciones" class="py-16")
+            div(class="container mx-auto px-4")
+                h2(class="text-3xl font-bold text-center mb-4 text-gray-800") Ediciones Destacadas
+                p(class="text-center text-gray-600 mb-12 max-w-2xl mx-auto") Algunos de nuestros números más relevantes que marcaron hitos en el debate estudiantil.
 
-            if revistas && revistas.length > 0
-                //- Revista destacada (centrada)
-                div(class="flex justify-center mb-6 sm:mb-8")
-                    div(class="w-full sm:w-96") 
-                        div(class="bg-white rounded-xl shadow-md overflow-hidden border border-indigo-200 hover:shadow-lg transition duration-300 group relative")
-                            //- Ribbon para destacada
-                            div(class="absolute -right-2 -top-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded z-10") Destacada
+                if revistas && revistas.length > 0
+                    //- Revista destacada (centrada)
+                    div(class="flex justify-center mb-6 sm:mb-8")
+                        div(class="w-full sm:w-96") 
+                            div(class="bg-white rounded-2xl shadow-md overflow-hidden border border-indigo-200 hover:shadow-lg transition duration-300 group relative")
+                                //- Ribbon para destacada
+                                div(class="absolute -right-2 -top-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10") Destacada
+                                
+                                div(class="relative overflow-hidden h-48 rounded-t-2xl")
+                                    img(src=revistas[0].imagen || "/img/default.jpg" alt=revistas[0].titulo class="w-full h-full object-cover transition duration-500 group-hover:scale-105")
+                                    div(class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-4")
+                                        div(class="translate-y-4 group-hover:translate-y-0 transition duration-300")
+                                            h3(class="text-white font-bold text-base")= revistas[0].titulo
+                                            p(class="text-gray-200 text-sm") Edición mas reciente
+                                
+                                div(class="p-4")
+                                    div(class="flex justify-between items-start mb-2")
+                                        div
+                                            h3(class="text-gray-900 font-bold text-base")= revistas[0].titulo
+                                    
+                                    p(class="text-sm text-gray-600 mb-3 line-clamp-2")= revistas[0].descripcion || "Descripción no disponible"
+                                    
+                                    div(class="flex justify-between border-t border-gray-100 pt-3 text-sm")
+                                        a(href=`/revista/${revistas[0].id}` class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1")
+                                            svg(xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z")
+                                            | Vista previa
+                                        a(href=revistas[0].url class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1")
+                                            svg(xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4")
+                                            | PDF (#{formatFileSize(revistas[0].tamanio)})
+
+                    //- Resto de revistas
+                    div(class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6")
+                        each revista, index in revistas.slice(1)
+                            div(class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300 group")
+                                div(class="relative overflow-hidden h-40 sm:h-48 rounded-t-2xl")
+                                    img(src=revista.imagen || "/img/default.jpg" alt=revista.titulo class="w-full h-full object-cover transition duration-500 group-hover:scale-105")
+                                    div(class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-3 sm:p-4")
+                                        div(class="translate-y-4 group-hover:translate-y-0 transition duration-300")
+                                            h3(class="text-white font-bold text-sm sm:text-base")= revista.titulo
+                                            p(class="text-gray-200 text-xs sm:text-sm") Crisol
+                                
+                                div(class="p-3 sm:p-4")
+                                    div(class="flex justify-between items-start mb-1 sm:mb-2")
+                                        div
+                                            h3(class="text-gray-900 font-bold text-sm sm:text-base")= revista.titulo
+                                        span(class=`text-xs px-2 py-1 rounded-full ${index > 0 ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`)= index > 0 ? 'Nuevo' : 'Popular'
+                                    
+                                    p(class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-2")= revista.descripcion 
+                                    
+                                    div(class="flex justify-between border-t border-gray-100 pt-2 sm:pt-3 text-xs sm:text-sm")
+                                        a(href=`/revista/${revista.id}` class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1")
+                                            svg(xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z")
+                                            | Vista previa
+                                        a(href=revista.url class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1")
+                                            svg(xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor")
+                                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4")
+                                            | PDF (#{formatFileSize(revista.tamanio)})
+
+                    //- Botón Ver Más
+                    div(class="flex justify-center mt-8 mb-12")
+                        a(href="/revistas" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300")
+                            | Ver todas las ediciones
+                            svg(xmlns="http://www.w3.org/2000/svg" class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor")
+                                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3")
+
+        section(id="historia" class="py-16 bg-gray-100")
+            div(class="container mx-auto px-4")
+                h2(class="text-3xl font-bold text-center mb-12 text-gray-800") Nuestra Historia
+                div(class="flex flex-col lg:flex-row items-center gap-12")
+                    div(class="lg:w-1/2 order-2 lg:order-1")
+                        img(src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Fundadores de Crisol" class="rounded-2xl shadow-xl w-full")
+                    div(class="lg:w-1/2 order-1 lg:order-2")
+                        h3(class="text-2xl font-bold mb-4 text-indigo-800") CRISOL: Voz de la FNERRR
+                        p(class="text-gray-600 mb-4") CRISOL es la revista bimestral de la Federación Nacional de Estudiantes "Rafael Ramírez" (FNERRR), publicada desde abril de 2011 como un medio de análisis y reflexión crítica.
+                        p(class="text-gray-600 mb-4") Ofrecemos una perspectiva comprometida sobre política, economía, cultura, ciencia y especialmente educación, combinando artículos de fondo con secciones fijas y variables, acompañadas de fotografías e ilustraciones.
+                        div(class="bg-indigo-50 p-4 rounded-xl mb-4 border-l-4 border-indigo-600")
+                            h4(class="font-bold text-indigo-800 mb-2") ¿Qué es la FNERRR?
+                            p(class="text-gray-700") Fundada en 1999, la FNERRR agrupa a miles de jóvenes mexicanos comprometidos con la lucha por una educación de calidad para todos, impulsando actividades académicas, culturales, deportivas y de formación integral.
+                        ul(class="space-y-3 mb-6")
+                            li(class="flex items-start")
+                                i(class="fas fa-check-circle text-indigo-600 mt-1 mr-3")
+                                span(class="text-gray-700") 2011: Primer número de CRISOL publicado
+                            li(class="flex items-start")
+                                i(class="fas fa-check-circle text-indigo-600 mt-1 mr-3")
+                                span(class="text-gray-700") Medio de análisis y formación política
+                        a(href="#ediciones" class="inline-flex items-center text-indigo-700 font-medium hover:text-indigo-900")
+                            | Conoce nuestras ediciones
+                            i(class="fas fa-arrow-right ml-2")
+
+        section(class="py-16")
+            div(class="container mx-auto px-4")
+                h2(class="text-3xl font-bold text-center mb-12 text-gray-800") Nuestra Línea Editorial
+                div(class="grid grid-cols-1 md:grid-cols-3 gap-8")
+                    div(class="text-center p-6 rounded-2xl bg-white shadow-md hover:shadow-xl transition")
+                        div(class="bg-indigo-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4")
+                            i(class="fas fa-graduation-cap text-3xl text-indigo-700")
+                        h3(class="text-xl font-semibold mb-3 text-gray-800") Enfoque Educativo
+                        p(class="text-gray-600") Priorizamos el análisis crítico del sistema educativo y propuestas para su transformación.
+
+                    div(class="text-center p-6 rounded-2xl bg-white shadow-md hover:shadow-xl transition")
+                        div(class="bg-indigo-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4")
+                            i(class="fas fa-fist-raised text-3xl text-indigo-700")
+                        h3(class="text-xl font-semibold mb-3 text-gray-800") Compromiso Social
+                        p(class="text-gray-600") Abordamos los problemas nacionales desde una perspectiva de izquierda y popular.
+
+                    div(class="text-center p-6 rounded-2xl bg-white shadow-md hover:shadow-xl transition")
+                        div(class="bg-indigo-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4")
+                            i(class="fas fa-pen-alt text-3xl text-indigo-700")
+                        h3(class="text-xl font-semibold mb-3 text-gray-800") Rigor Analítico
+                        p(class="text-gray-600") Combinamos el rigor académico con un lenguaje accesible para el pueblo.
+
+        // Sección Artículos Destacados
+        section(class="py-16 bg-gray-100")
+            div(class="container mx-auto px-4")
+                h2(class="text-3xl font-bold text-center mb-12 text-gray-800") Artículos Destacados
+                p(class="text-center text-gray-600 mb-12 max-w-2xl mx-auto") Una muestra de nuestro contenido más relevante y reciente.
+
+                div(class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12")
+                    // Artículo 1
+                    article(class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition duration-300")
+                        div(class="p-6")
+                            div(class="flex items-center mb-4")
+                                span(class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full mr-3") Análisis
+                                span(class="text-sm text-gray-500") 15 Junio 2023
+                            h3(class="text-xl font-bold mb-3 text-gray-800") La mercantilización de la educación pública
+                            p(class="text-gray-600 mb-4") Un examen profundo de cómo las políticas neoliberales están transformando la educación en un servicio comercial.
+                            div(class="flex items-center")
+                                img(src="https://randomuser.me/api/portraits/women/42.jpg" alt="Autora" class="w-10 h-10 rounded-full mr-3")
+                                div
+                                    p(class="text-sm font-medium text-gray-800") Dra. Laura Méndez
+                                    p(class="text-xs text-gray-500") Investigadora educativa
+                            div(class="mt-6 pt-4 border-t border-gray-200")
+                                a(href="#" class="text-indigo-700 hover:text-indigo-900 font-medium flex items-center justify-between")
+                                    span Leer artículo completo
+                                    i(class="fas fa-arrow-right")
+
+                    // Artículo 2
+                    article(class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition duration-300")
+                        div(class="p-6")
+                            div(class="flex items-center mb-4")
+                                span(class="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full mr-3") Entrevista
+                                span(class="text-sm text-gray-500") 2 Mayo 2023
+                            h3(class="text-xl font-bold mb-3 text-gray-800") "El movimiento estudiantil no ha muerto": Habla líder de la FNERRR
+                            p(class="text-gray-600 mb-4") Conversación exclusiva con el secretario general sobre los retos actuales del activismo estudiantil.
+                            div(class="flex items-center")
+                                img(src="https://randomuser.me/api/portraits/men/32.jpg" alt="Autor" class="w-10 h-10 rounded-full mr-3")
+                                div
+                                    p(class="text-sm font-medium text-gray-800") Juan Carlos Ortega
+                                    p(class="text-xs text-gray-500") Corresponsal político
+                            div(class="mt-6 pt-4 border-t border-gray-200")
+                                a(href="#" class="text-indigo-700 hover:text-indigo-900 font-medium flex items-center justify-between")
+                                    span Leer artículo completo
+                                    i(class="fas fa-arrow-right")
+
+        // Sección Colabora
+        section(id="colabora" class="py-16 bg-white text-textoSecundario")
+            div(class="container mx-auto px-4")
+                h2(class="text-3xl font-bold text-center mb-6") ¡Colabora con CRISOL!
+                p(class="text-center text-textoSecundario text-xl mb-12 max-w-3xl mx-auto") La FNERRR te invita a participar en nuestra revista. ¡Tu voz merece ser escuchada!
+
+                div(class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12")
+                    div(class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-transform duration-300 hover:-translate-y-2")
+                        div(class="bg-principal p-6 text-center rounded-t-2xl")
+                            i(class="fas fa-camera text-4xl text-white")
+                        div(class="p-6 text-gray-800 text-center")
+                            h3(class="text-xl font-bold mb-3") Fotografías
+                            p(class="text-gray-600 mb-6") Comparte tu perspectiva única a través de imágenes documentales, artísticas o series fotográficas.
+
+                    div(class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-transform duration-300 hover:-translate-y-2")
+                        div(class="bg-principal p-6 text-center rounded-t-2xl")
+                            i(class="fas fa-newspaper text-4xl text-white")
+                        div(class="p-6 text-gray-800 text-center")
+                            h3(class="text-xl font-bold mb-3") Artículos
+                            p(class="text-gray-600 mb-6") Comparte tus análisis y reflexiones sobre cultura, ciencia, tecnología y temas sociales.
+
+                    div(class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-transform duration-300 hover:-translate-y-2")
+                        div(class="bg-principal p-6 text-center rounded-t-2xl")
+                            i(class="fas fa-microphone-alt text-4xl text-white")
+                        div(class="p-6 text-gray-800 text-center")
+                            h3(class="text-xl font-bold mb-3") Reportajes
+                            p(class="text-gray-600 mb-6") Cuéntanos historias relevantes a través de entrevistas, crónicas o reportajes investigativos.
                             
-                            div(class="relative overflow-hidden h-48")
-                                img(src=revistas[0].imagen || "/img/default.jpg" alt=revistas[0].titulo class="w-full h-full object-cover transition duration-500 group-hover:scale-105")
-                                div(class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-4")
-                                    div(class="translate-y-4 group-hover:translate-y-0 transition duration-300")
-                                        h3(class="text-white font-bold text-base")= revistas[0].titulo
-                                        p(class="text-gray-200 text-sm") Edición mas reciente
-                            
-                            div(class="p-4")
-                                div(class="flex justify-between items-start mb-2")
-                                    div
-                                        h3(class="text-gray-900 font-bold text-base")= revistas[0].titulo
-                                
-                                p(class="text-sm text-gray-600 mb-3 line-clamp-2")= revistas[0].descripcion || "Descripción no disponible"
-                                
-                                div(class="flex justify-between border-t border-gray-100 pt-3 text-sm")
-                                    a(href=`/revista/${revistas[0].id}` class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1")
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        | Vista previa
-                                    a(href=revistas[0].url class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1")
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        | PDF (#{formatFileSize(revistas[0].tamanio)})
-
-                //- Resto de revistas
-                div(class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6")
-                    each revista, index in revistas.slice(1)
-                        div(class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300 group")
-                            div(class="relative overflow-hidden h-40 sm:h-48")
-                                img(src=revista.imagen || "/img/default.jpg" alt=revista.titulo class="w-full h-full object-cover transition duration-500 group-hover:scale-105")
-                                div(class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-3 sm:p-4")
-                                    div(class="translate-y-4 group-hover:translate-y-0 transition duration-300")
-                                        h3(class="text-white font-bold text-sm sm:text-base")= revista.titulo
-                                        p(class="text-gray-200 text-xs sm:text-sm") Crisol
-                            
-                            div(class="p-3 sm:p-4")
-                                div(class="flex justify-between items-start mb-1 sm:mb-2")
-                                    div
-                                        h3(class="text-gray-900 font-bold text-sm sm:text-base")= revista.titulo
-                                    span(class=`text-xs px-2 py-1 rounded-full ${index > 0 ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`)= index > 0 ? 'Nuevo' : 'Popular'
-                                
-                                p(class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-2")= revista.descripcion 
-                                
-                                div(class="flex justify-between border-t border-gray-100 pt-2 sm:pt-3 text-xs sm:text-sm")
-                                    a(href=`/revista/${revista.id}` class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1")
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        | Vista previa
-                                    a(href=revista.url class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1")
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        | PDF (#{formatFileSize(revista.tamanio)})
-
-                //- Botón Ver Más
-                div(class="flex justify-center mt-8 mb-12")
-                    a(href="/revistas" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300")
-                        | Ver todas las ediciones
-                        <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                                        
-
-    div(class="flex justify-center items-center p-10 bg-gray-100")
-        div(class="space-y-8 w-full max-w-4xl")
-            // Tarjeta orientada a la izquierda (imagen a la izquierda, texto a la derecha)
-            div(class="flex flex-col md:flex-row items-center bg-white shadow-xl rounded-2xl overflow-hidden")
-                img(src="/img/carruesl1.jpg" alt="Imagen 1" class="w-full md:w-1/2 h-64 object-cover")
-                div(class="p-8 w-full md:w-1/2")
-                    h2(class="font-title text-2xl font-semibold mb-4") Artículo 1: Innovación en la Educación
-                    p(class="font-title text-lg text-gray-700")
-                        | Descripción: Explora cómo la tecnología está transformando la educación, con herramientas interactivas y metodologías modernas que facilitan el aprendizaje. Un vistazo al futuro de las aulas y la enseñanza personalizada.
-
-            div(class="flex flex-col md:flex-row-reverse items-center bg-white shadow-xl rounded-2xl overflow-hidden")
-                img(src="/img/carruesl1.jpg" alt="Imagen 2" class="w-full md:w-1/2 h-64 object-cover")
-                div(class="p-8 w-full md:w-1/2")
-                    h2(class="font-title text-2xl font-semibold mb-4") Artículo 2: Liderazgo Juvenil en la Política
-                    p(class="font-title text-lg text-gray-700")
-                        | Descripción: Descubre historias de jóvenes líderes que están marcando la diferencia en sus comunidades. Desde debates políticos hasta iniciativas de cambio social, estas voces inspiran una nueva era.
-
-            div(class="flex flex-col md:flex-row items-center bg-white shadow-xl rounded-2xl overflow-hidden")
-                img(src="/img/carruesl1.jpg" alt="Imagen 3" class="w-full md:w-1/2 h-64 object-cover")
-                div(class="p-8 w-full md:w-1/2")
-                    h2(class="font-title text-2xl font-semibold mb-4") Artículo 3: El Arte como Expresión Urbana
-                    p(class="font-title text-lg text-gray-700")
-                        | Descripción: Un recorrido por cómo los murales y el arte callejero están revitalizando espacios urbanos, conectando a las personas con mensajes visuales llenos de creatividad y emoción.
+                div(class="text-center bg-gradient-to-r from-principal to-indigo-700 rounded-2xl p-8 shadow-xl")
+                    p(class="text-xl md:text-2xl text-white mb-6 font-medium") Los mejores trabajos serán publicados en nuestro órgano de difusión cultural
+                    a(href="#" class="inline-flex items-center px-8 py-4 bg-white text-principal rounded-full font-bold hover:bg-amber-100 transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1")
+                        i(class="fas fa-handshake mr-3 text-lg")
+                        span(class="tracking-wide") ¡COLABORA CON NOSOTROS!
