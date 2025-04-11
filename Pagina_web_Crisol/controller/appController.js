@@ -168,6 +168,11 @@ const contacto = (req, res) => {
         pagina: 'Contacto',
     })
 }
+const colabora = (req, res) => {
+    res.render('colabora', {
+        pagina: 'Contacto',
+    })
+}
 const quienesSomos = (req, res) => {
     res.render('quienesSomos', {
         pagina: '¿Quienes Somos?',
@@ -254,48 +259,120 @@ const contactoRegistro = async (req, res) => {
     }
 };
 
+const validarColaboracion = [
+    check('titulo')
+        .notEmpty().withMessage('El título es obligatorio')
+        .trim()
+        .isLength({ min: 5 }).withMessage('El título debe tener al menos 5 caracteres'),
+        
+    check('nombre')
+        .notEmpty().withMessage('El nombre es obligatorio')
+        .trim(),
+            
+    check('email')
+        .notEmpty().withMessage('El email es obligatorio')
+        .trim()
+        .isEmail().withMessage('Debe ser un email válido'),
+        
+    check('confirmar_email')
+        .notEmpty().withMessage('Debes confirmar tu email')
+        .custom((value, { req }) => value === req.body.email)
+        .withMessage('Los emails no coinciden'),
+        
+    check('categoria')
+        .notEmpty().withMessage('La categoría es obligatoria')
+        .isIn([
+            'Visión estudiantil', 
+            'Mundo y política', 
+            'Educación', 
+            'Ciencia', 
+            'Poesía', 
+            'Arte', 
+            'Cultura', 
+            'Deporte', 
+            'Noticiero estudiantil', 
+            'Desafíos mentales'
+        ]),
+        
+    check('contenido')
+        .notEmpty().withMessage('El contenido es obligatorio')
+        .trim()
+        .isLength({ min: 50 }).withMessage('El contenido debe tener al menos 50 caracteres'),
+        
+    check('imagen')
+        .custom((value, { req }) => {
+            if (!req.file) {
+                return true; // Permitir no subir imagen
+            }
+            
+            const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif'];
+            const extension = req.file.originalname.split('.').pop().toLowerCase();
+            
+            if (!extensionesPermitidas.includes(extension)) {
+                throw new Error('Formato de imagen no válido (solo JPG, JPEG, PNG o GIF)');
+            }
+            
+            if (req.file.size > 5 * 1024 * 1024) { // 5MB
+                throw new Error('La imagen no debe exceder los 5MB');
+            }
+            
+            return true;
+        })
+];
+
 const colaboraRegistro = async (req, res) => {
-    const { titulo, nombre, email, confirmar_email, categoria, contenido } = req.body;
-    const img = req.file; // Cambiamos el nombre a 'img' para consistencia
+    // Ejecutar validaciones
+    await Promise.all(validarColaboracion.map(validation => validation.run(req)));
+    
+    const errores = validationResult(req);
 
-    console.log('Datos recibidos:', { titulo, nombre, email, confirmar_email, categoria, contenido, img });
-
-    // Validar que los correos coincidan
-    if (email !== confirmar_email) {
-        return res.status(400).json({ error: 'Los correos electrónicos no coinciden' });
+    if (!errores.isEmpty()) {
+        return res.render('colabora', {
+            pagina: 'Colabora con La Crisol',
+            errores: errores.array(),
+            datos: req.body
+        });
     }
 
+    const { titulo, nombre, email, categoria, contenido } = req.body;
+    const img = req.file;
+
     try {
-        // Guardar la ruta de la imagen si se subió un archivo
         const imagenPath = img ? `/img/${img.filename}` : null;
 
-        // Crear un nuevo registro en la base de datos
         const nuevaColaboracion = await Colaboracion.create({
             titulo,
             nombre,
             email,
             categoria,
             contenido,
-            imagen: imagenPath, // Usamos la ruta relativa consistente
+            imagen: imagenPath
         });
 
         console.log('Colaboración registrada:', nuevaColaboracion);
 
-        // Redirigir a la vista /contacto después del éxito
-        res.redirect('/contacto');
+        return res.render('colabora', {
+            pagina: 'Colabora con La Crisol',
+            success: '¡Gracias por tu colaboración! Tu artículo ha sido enviado correctamente.',
+            datos: {} // Limpiar el formulario
+        });
+
     } catch (error) {
         console.error('Error al registrar la colaboración:', error);
-
-        // Manejo de errores específicos
+        
+        let mensajeError = 'Ocurrió un error al procesar tu solicitud';
+        
         if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ error: 'Error de validación: ' + error.errors.map(e => e.message).join(', ') });
+            mensajeError = 'Error de validación en los datos';
+        } else if (error.name === 'SequelizeDatabaseError') {
+            mensajeError = 'Error en la base de datos';
         }
 
-        if (error.name === 'SequelizeDatabaseError') {
-            return res.status(500).json({ error: 'Error de base de datos: ' + error.message });
-        }
-
-        res.status(500).json({ error: 'Error al registrar la colaboración' });
+        return res.render('colabora', {
+            pagina: 'Colabora con La Crisol',
+            errores: [{ msg: mensajeError }],
+            datos: req.body
+        });
     }
 };
 
@@ -323,6 +400,7 @@ export {
     inicio,
     noticias,
     contacto,
+    colabora,
     quienesSomos,
     contactoRegistro,
     colaboraRegistro,
