@@ -6,6 +6,8 @@ import Colaboracion from '../models/colaboraCrisol.js'
 import Configuracion from '../models/configuracion.js'
 import Revistas from '../models/revistas.js'
 import Slider from '../models/slider.js'
+import Articulo from '../models/articulo.js'
+
 
 
 
@@ -22,18 +24,24 @@ const inicio = async (req, res) => {
             order: [['posicion', 'ASC']]
         });
 
-        // Resto de tu lógica original...
-        const images = []; // Esto ya no sería necesario
+        // Obtener revistas recientes
         const revistas = await Revistas.findAll({
             order: [['createdAt', 'DESC']],
             limit: 4,
         });
 
+        // Obtener artículos destacados (los 2 más recientes)
+        const articulosDestacados = await Articulo.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 2
+        });
+
         res.render('inicio', {
             pagina: 'Inicio',
             barra: true,
-            slides, // Pasamos los slides dinámicos
-            revistas: revistas,
+            slides,
+            revistas,
+            articulos: articulosDestacados, // Pasamos los artículos destacados
             formatFileSize: (bytes) => {
                 if (bytes === 0) return '0 Bytes';
                 const k = 1024;
@@ -99,6 +107,47 @@ const revistas = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener las revistas:', error);
         res.status(500).send('Error al cargar las revistas');
+    }
+};
+
+
+const articulos = async (req, res) => {
+    try {
+        const articulos = await Articulo.findAll({
+            order: [['createdAt', 'DESC']]
+        });
+        
+        // Verifica los artículos obtenidos
+        console.log('Artículos encontrados:', articulos.map(a => a.toJSON()));
+        
+        res.render('listadoArticulos', {
+            pagina: 'Todos los Artículos',
+            articulos: articulos.map(articulo => articulo.get({ plain: true })) // Convertir a objetos planos
+        });
+    } catch (error) {
+        console.error('Error al obtener artículos:', error);
+        res.status(500).send('Error al obtener los artículos');
+    }
+};
+
+
+const obtenerArticuloPorId = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const articulo = await Articulo.findByPk(id);
+        
+        if (!articulo) {
+            return res.status(404).send('Artículo no encontrado');
+        }
+        
+        res.render('articulos/articulo', {
+            pagina: articulo.titulo,
+            articulo
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Error al obtener el artículo');
     }
 };
 
@@ -406,6 +455,8 @@ export {
     noEncontrado,
     obtenerConfiguracion,
     revistas,
+    articulos,
+    obtenerArticuloPorId,
     mostrarRevista
 }
 

@@ -11,10 +11,240 @@ import Revistas from '../models/revistas.js';
 import Contacto from '../models/contacto.js';
 import Colaboracion from '../models/colaboraCrisol.js';
 import Slider from '../models/slider.js';
+import Articulo from '../models/articulo.js';
 
 // Obtener __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
+
+
+
+const agregarArticulo = async (req, res) => {
+    try {
+        res.render('admin/agregarArticulo', {
+            pagina: 'Agregar Artículo',
+            articulo: null
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/verarticulos?error=Error al cargar el formulario');
+    }
+};
+const registrarArticulo = async (req, res) => {
+    try {
+        const { titulo, contenido, categoria, nombreAutor, ocupacionAutor } = req.body;
+
+        if (!titulo || !contenido || !categoria || !nombreAutor || !ocupacionAutor) {
+            return res.redirect('/admin/agregar-articulo?error=Faltan campos requeridos');
+        }
+
+        const img = req.files['img']?.[0];
+        const imgAutor = req.files['imgAutor']?.[0];
+        
+        if (!img || !imgAutor) {
+            return res.redirect('/admin/agregar-articulo?error=Se requieren ambas imágenes');
+        }
+        
+        const articulo = await Articulo.create({
+            titulo,
+            contenido,
+            categoria,
+            nombreAutor,
+            ocupacionAutor,
+            img: `/uploads/${img.filename}`,
+            imgAutor: `/uploads/${imgAutor.filename}`
+        });
+        
+        return res.redirect('/admin/verarticulos?success=Artículo creado correctamente');
+    } catch (error) {
+        console.error('Error:', error);
+        
+        // Limpieza de archivos subidos en caso de error
+        if (req.files) {
+            Object.values(req.files).forEach(fileArray => {
+                fileArray.forEach(file => {
+                    const filePath = path.join(process.cwd(), 'public', 'uploads', file.filename);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                });
+            });
+        }
+
+        return res.redirect(`/admin/agregar-articulo?error=${encodeURIComponent(error.message)}`);
+    }
+};
+
+
+const formEditarArticulo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const articulo = await Articulo.findByPk(id);
+
+        if (!articulo) {
+            return res.redirect('/admin/verarticulos?error=Artículo no encontrado');
+        }
+
+        res.render('admin/editarArticulo', {
+            pagina: `Editar: ${articulo.titulo}`,
+            articulo
+        });
+    } catch (error) {
+        console.error('Error al cargar formulario de edición:', error);
+        res.redirect('/admin/verarticulos?error=Error al cargar el formulario');
+    }
+};
+
+
+const actualizarArticulo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { titulo, contenido, categoria, nombreAutor, ocupacionAutor } = req.body;
+
+        const articulo = await Articulo.findByPk(id);
+        if (!articulo) {
+            return res.redirect('/admin/verarticulos?error=Artículo no encontrado');
+        }
+
+        // Actualizar campos básicos
+        articulo.titulo = titulo;
+        articulo.contenido = contenido;
+        articulo.categoria = categoria;
+        articulo.nombreAutor = nombreAutor;
+        articulo.ocupacionAutor = ocupacionAutor;
+
+        // Manejar imágenes si se subieron nuevas
+        if (req.files['img']) {
+            // Eliminar imagen anterior si existe
+            if (articulo.img) {
+                const oldPath = path.join(process.cwd(), 'public', articulo.img);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                }
+            }
+            articulo.img = `/uploads/${req.files['img'][0].filename}`;
+        }
+
+        if (req.files['imgAutor']) {
+            // Eliminar imagen anterior si existe
+            if (articulo.imgAutor) {
+                const oldPath = path.join(process.cwd(), 'public', articulo.imgAutor);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                }
+            }
+            articulo.imgAutor = `/uploads/${req.files['imgAutor'][0].filename}`;
+        }
+
+        await articulo.save();
+        
+        return res.redirect('/admin/verarticulos?success=Artículo actualizado correctamente');
+    } catch (error) {
+        console.error('Error:', error);
+        return res.redirect(`/admin/editar-articulo/${req.params.id}?error=${encodeURIComponent(error.message)}`);
+    }
+};
+
+const verArticulos = async (req, res) => {
+    try {
+        // Configuración de paginación
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
+        
+        // Filtro por categoría si existe
+        const categoria = req.query.categoria || '';
+        const whereClause = categoria ? { categoria } : {};
+        
+        // Obtener artículos paginados y filtrados
+        const { count, rows: articulos } = await Articulo.findAndCountAll({
+            where: whereClause,
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
+        });
+
+        const categorias = [
+            'Visión estudiantil', 'Mundo y política', 'Educación', 
+            'Ciencia', 'Poesía', 'Arte', 'Cultura', 
+            'Deporte', 'Noticiero estudiantil', 'Desafíos mentales'
+        ];
+
+        res.render('admin/verArticulos', {
+            pagina: 'Gestión de Artículos',
+            articulos,
+            categorias: categorias.map(cat => ({ value: cat, label: cat })),
+            categoriaSeleccionada: categoria,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalItems: count,
+            limit,
+            success: req.query.success,
+            error: req.query.error
+        });
+    } catch (error) {
+        console.error('Error al obtener artículos:', error);
+        res.redirect('/admin?error=Error al cargar los artículos');
+    }
+};
+
+const verDetalleArticulo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const articulo = await Articulo.findByPk(id);
+
+        if (!articulo) {
+            return res.redirect('/admin/verarticulos?error=Artículo no encontrado');
+        }
+
+        res.render('admin/detalleArticulo', {
+            pagina: `Detalle: ${articulo.titulo}`,
+            articulo
+        });
+    } catch (error) {
+        console.error('Error al ver detalle:', error);
+        res.redirect('/admin/verarticulos?error=Error al cargar el artículo');
+    }
+};
+
+const eliminarArticulo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const articulo = await Articulo.findByPk(id);
+
+        if (!articulo) {
+            return res.redirect('/admin/verarticulos?error=Artículo no encontrado');
+        }
+
+        // Eliminar imágenes asociadas
+        if (articulo.img) {
+            const imgPath = path.join(process.cwd(), 'public', articulo.img);
+            if (fs.existsSync(imgPath)) {
+                fs.unlinkSync(imgPath);
+            }
+        }
+
+        if (articulo.imgAutor) {
+            const imgAutorPath = path.join(process.cwd(), 'public', articulo.imgAutor);
+            if (fs.existsSync(imgAutorPath)) {
+                fs.unlinkSync(imgAutorPath);
+            }
+        }
+
+        await articulo.destroy();
+        res.redirect('/admin/verarticulos?success=Artículo eliminado correctamente');
+    } catch (error) {
+        console.error('Error al eliminar artículo:', error);
+        res.redirect('/admin/verarticulos?error=Error al eliminar el artículo');
+    }
+};
+
+
+
+
+
 
 
 const mostrarSlides = async (req, res) => {
@@ -1064,5 +1294,12 @@ export {
     verColaboracionIndividual,
     mostrarSlides,
     actualizarSlide,
-    mostrarFormularioCrear
+    mostrarFormularioCrear,
+    agregarArticulo,
+    registrarArticulo,
+    actualizarArticulo,
+    verArticulos,
+    verDetalleArticulo,
+    eliminarArticulo,
+    formEditarArticulo
 };

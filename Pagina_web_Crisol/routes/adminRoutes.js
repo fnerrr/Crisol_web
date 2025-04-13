@@ -26,12 +26,47 @@ import {
     toggleFavoritoColaboracion,
     eliminarColaboracion,
     actualizarSlide,
-    mostrarSlides
+    mostrarSlides,
+    agregarArticulo,
+    registrarArticulo,
+    actualizarArticulo,
+    verArticulos,
+    verDetalleArticulo,
+    eliminarArticulo,
+    formEditarArticulo    
 } from '../controller/adminController.js';
 import upload from '../config/multerConfig.js';
 import { uploadFiles } from '../config/multerRevistas.js';
 
 const router = express.Router();
+
+
+router.get('/verarticulos', protegerRuta, verArticulos);
+router.get('/articulo/:id', protegerRuta, verDetalleArticulo);
+router.get('/editar-articulo/:id', protegerRuta, formEditarArticulo);
+router.post('/actualizar-articulo/:id', protegerRuta, upload.fields([
+    { name: 'img', maxCount: 1 },
+    { name: 'imgAutor', maxCount: 1 }
+]), actualizarArticulo);
+router.post('/eliminar-articulo/:id', protegerRuta, eliminarArticulo);
+
+router.get('/agregar-articulo',protegerRuta,agregarArticulo)
+router.post('/registro-articulos', protegerRuta, upload.fields([
+    { name: 'img', maxCount: 1 },
+    { name: 'imgAutor', maxCount: 1 }
+]), registrarArticulo);
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.get('/slider',protegerRuta, mostrarSlides);
 // En tu archivo de rutas (routes.js)
