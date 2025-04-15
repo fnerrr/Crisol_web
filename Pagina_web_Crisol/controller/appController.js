@@ -1,4 +1,5 @@
-// import Slider from '../models/slider.js'
+import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import s3Client from '../config/s3Config.js';
 import { check, validationResult } from 'express-validator'
 import Noticias from '../models/noticias.js'
 import Contacto from '../models/contacto.js'
@@ -97,6 +98,7 @@ const revistas = async (req, res) => {
             formatFileSize: formatFileSize,
             formatDate: formatDate,
             revistas: revistas,
+            barra: false,
             pagination: {
                 currentPage: page,
                 totalPages: totalPages,
@@ -141,7 +143,7 @@ const obtenerArticuloPorId = async (req, res) => {
             return res.status(404).send('Artículo no encontrado');
         }
         
-        res.render('articulos/articulo', {
+        res.render('verArticulo', {
             pagina: articulo.titulo,
             articulo
         });
@@ -172,7 +174,64 @@ const mostrarRevista = async (req, res) => {
     }
 };
 
+// Añade este nuevo controlador:
+const descargarRevista = async (req, res) => {
+    try {
+        const revista = await Revistas.findByPk(req.params.id);
+        if (!revista || !revista.s3_key) {
+            return res.status(404).send('Revista no encontrada');
+        }
 
+        // Asegúrate que el nombre del bucket sea exacto (corrige "mi-bucker-pdfs" si es un typo)
+        const bucketName = process.env.AWS_BUCKET_NAME || 'mi-bucket-pdfs'; // Cambia esto al nombre correcto
+        
+        const downloadParams = {
+            Bucket: bucketName,
+            Key: revista.s3_key.startsWith('/') ? revista.s3_key.substring(1) : revista.s3_key,
+            ResponseContentDisposition: `attachment; filename="${encodeURIComponent(revista.titulo)}.pdf"`
+        };
+
+        console.log('Intentando descargar:', downloadParams); // Debug
+
+        // Verificar si el archivo existe
+        try {
+            await s3Client.send(new HeadObjectCommand({
+                Bucket: downloadParams.Bucket,
+                Key: downloadParams.Key
+            }));
+        } catch (headErr) {
+            console.error('Error en HeadObject:', {
+                name: headErr.name,
+                message: headErr.message,
+                code: headErr.Code
+            });
+            return res.status(404).send('Archivo no encontrado en S3');
+        }
+
+        // Descargar el archivo
+        const { Body } = await s3Client.send(new GetObjectCommand(downloadParams));
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', downloadParams.ResponseContentDisposition);
+        
+        Body.on('error', err => {
+            console.error('Stream error:', err);
+            if (!res.headersSent) {
+                res.status(500).send('Error durante la descarga');
+            }
+        });
+
+        Body.pipe(res);
+
+    } catch (error) {
+        console.error('Error completo:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        res.status(500).send(`Error al descargar: ${error.message}`);
+    }
+};
 
 const noEncontrado = (req, res) => {
     res.render('404', {
@@ -457,7 +516,8 @@ export {
     revistas,
     articulos,
     obtenerArticuloPorId,
-    mostrarRevista
+    mostrarRevista,
+    descargarRevista
 }
 
 

@@ -53,8 +53,8 @@ const registrarArticulo = async (req, res) => {
             categoria,
             nombreAutor,
             ocupacionAutor,
-            img: `/uploads/${img.filename}`,
-            imgAutor: `/uploads/${imgAutor.filename}`
+            img: `/img/${img.filename}`,
+            imgAutor: `/img/${imgAutor.filename}`
         });
         
         return res.redirect('/admin/verarticulos?success=Artículo creado correctamente');
@@ -755,6 +755,7 @@ const uploadPdfController = async (req, res) => {
                 Key: pdfFile.filename,
                 Body: fileStream,
                 ContentType: pdfFile.mimetype,
+                
             };
 
             await s3Client.send(new PutObjectCommand(uploadParams));

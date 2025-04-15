@@ -1,7 +1,7 @@
 nav(
     x-data="{ scrolled: false }"
     class="sticky top-0 w-full z-40 transition-all duration-300 py-2 hidden md:block"
-    :class="scrolled ? 'bg-principal shadow-lg' : 'bg-white/90 backdrop-blur-sm'"
+    :class="scrolled ? 'bg-principal shadow-lg' : 'bg-orange-50/90 backdrop-blur-sm'"
     @scroll.window="scrolled = (window.pageYOffset > 50)"
 )
     .container.mx-auto.px-4

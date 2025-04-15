@@ -66,20 +66,17 @@ header(class="flex flex-col sm:flex-row shadow-xl justify-around items-center p-
                                         span(class="ml-2 transition-transform duration-200" :class="{ 'rotate-180': submenuOpen }") ▼
                                     ul(x-show="submenuOpen",class="pl-4 mt-2 space-y-2")
                                         li
-                                            a(href="/quienes-somos/historia",class="inline-block text-white hover:text-gray-200") Actualizar slider
-                                        li
-                                            a(href="/quienes-somos/mision-vision",class="inline-block text-white hover:text-gray-200") Ver Slider 
+                                            a(href="/admin/slider",class="inline-block text-white hover:text-gray-200") Actualizar slider
+
                             li
                                 div(x-data="{ submenuOpen: false }")
                                     button(x-on:click="submenuOpen = !submenuOpen",class="inline-block text-white hover:text-gray-200 font-medium flex items-center") Articulos
                                         span(class="ml-2 transition-transform duration-200" :class="{ 'rotate-180': submenuOpen }") ▼
                                     ul(x-show="submenuOpen",class="pl-4 mt-2 space-y-2")
                                         li
-                                            a(href="/quienes-somos/historia",class="inline-block text-white hover:text-gray-200") Agregar articulos
+                                            a(href="/admin/agregar-articulo",class="inline-block text-white hover:text-gray-200") Agregar articulos
                                         li
-                                            a(href="/quienes-somos/mision-vision",class="inline-block text-white hover:text-gray-200") Ver articulos
-                                        li
-                                            a(href="/quienes-somos/mision-vision",class="inline-block text-white hover:text-gray-200") Editar articulos 
+                                            a(href="/admin/verarticulos",class="inline-block text-white hover:text-gray-200") Ver articulos
                             li
                                 div(x-data="{ submenuOpen: false }")
                                     button(x-on:click="submenuOpen = !submenuOpen",class="inline-block text-white hover:text-gray-200 font-medium flex items-center") Revistas

@@ -58,16 +58,6 @@ router.post('/registro-articulos', protegerRuta, upload.fields([
 
 
 
-
-
-
-
-
-
-
-
-
-
 router.get('/slider',protegerRuta, mostrarSlides);
 // En tu archivo de rutas (routes.js)
 router.post('/slider/:id', protegerRuta, upload.single('imagen'), actualizarSlide);

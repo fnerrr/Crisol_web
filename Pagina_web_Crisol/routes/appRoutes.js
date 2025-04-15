@@ -1,6 +1,6 @@
 import express from 'express'
 import upload from '../config/multerConfig.js'
-import { inicio, noticias, contacto, quienesSomos, contactoRegistro, colaboraRegistro, noEncontrado, revistas, mostrarRevista, colabora, articulos, obtenerArticuloPorId } from '../controller/appController.js'
+import { inicio, noticias, contacto, quienesSomos, contactoRegistro, colaboraRegistro, noEncontrado, revistas, mostrarRevista, colabora, articulos, obtenerArticuloPorId, descargarRevista } from '../controller/appController.js'
 
 
 const router = express.Router()
@@ -15,6 +15,7 @@ router.get('/articulos', articulos)
 router.get('/articulos/:id', obtenerArticuloPorId);
 // En tu archivo de rutas (routes.js o similar)
 router.get('/revista/:id', mostrarRevista);
+router.get('/revistas/descargar/:id', descargarRevista);
 router.get('/noticias', noticias)
 router.get('/contacto', contacto)
 router.get('/colabora', colabora)
